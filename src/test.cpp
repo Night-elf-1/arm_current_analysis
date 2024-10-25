@@ -59,7 +59,7 @@ void readCSV(const string& filename, vector<ClampingArmData>& data) {
 }
 
 int main() {
-    string filename = "/home/hamster/mycode/arm_current_analysis/data/predictive_table.csv"; // CSV文件路径
+    string filename = "/home/hamster/mycode/Arm_current_analysis/data/predictive_table.csv"; // CSV文件路径
     vector<ClampingArmData> clampingArmData;
     readCSV(filename, clampingArmData);
 
