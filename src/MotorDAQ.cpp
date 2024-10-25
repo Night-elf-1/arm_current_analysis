@@ -60,10 +60,10 @@ MotorDAQ::~MotorDAQ()
 
 void MotorDAQ::behaviorActionCallback(const std_msgs::String& msg)
 {
-    m_mutex.lock();
-    m_action = msg.data;
+    // m_mutex.lock();
+    // m_action = msg.data;
     // std::cout << "topic" << std::endl;
-    m_mutex.unlock();
+    // m_mutex.unlock();
 }
 
 void MotorDAQ::saveDAQToFile(const std::string &fileName)

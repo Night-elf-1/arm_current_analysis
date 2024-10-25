@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/home/hamster/mycode/Arm_current_analysis/include/**",
-                "/usr/include/eigen3"
+                "/usr/include/eigen3",
+                "/home/hamster/mycode/Arm_current_analysis/include/MotorDAQ/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

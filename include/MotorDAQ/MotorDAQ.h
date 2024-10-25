@@ -18,13 +18,13 @@
  */
 #ifndef _MotorDAQ_H_
 #define _MotorDAQ_H_
-#include "ros/ros.h"
+// #include "ros/ros.h"
 #include "LTSMC.h"
 #include <queue>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
-#include "std_msgs/String.h"
+// #include "std_msgs/String.h"
 
 #define TARGET_FILE_SIZE        (10 * 1024 * 1024)
 void exit_func(void);
@@ -86,22 +86,22 @@ struct DataFrame {
 class MotorDAQ
 {
 public:
-    MotorDAQ(ros::NodeHandle *nh);
+    MotorDAQ();
     ~MotorDAQ();
     void getCurrentAll(void);
     void saveDAQToFile(const std::string& fileName);
     void run(void);
     void runSave(void);
 private:
-    void behaviorActionCallback(const std_msgs::String& msg);
+    // void behaviorActionCallback(const std_msgs::String& msg);
     void connectInit(void);
     void disconnect(void);
     // void exit_func(void);
     std::string generateFileNameWithTimestamp(void); 
     long long getFileSize(const std::string& filename);
 private:
-    ros::NodeHandle *m_nh;
-    ros::Subscriber m_subBehavior;
+    // ros::NodeHandle *m_nh;
+    // ros::Subscriber m_subBehavior;
     std::string m_action;
     std::queue<DataFrame> m_QueueFirst;
     std::queue<DataFrame> m_QueueSecond;
