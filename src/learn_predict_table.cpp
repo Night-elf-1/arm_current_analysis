@@ -1,4 +1,4 @@
-#include "../include/learn_predict_table.h"
+#include "learn_predict_table.h"
 
 void Linear_regression::readCSV(const string& filename, vector<ClampingArmData>& data) {
     ifstream file(filename);
@@ -132,6 +132,7 @@ int main(int argc, char const *argv[])
 
     cout << "Linear regression model parameters: \n";
     cout << "Slope (m): " << w(0) << ", Intercept (b): " << w(1) << endl;
+    cout << "w = " << w << endl;
 
     // 实时读取平均电流值
     double realTimeArea;
