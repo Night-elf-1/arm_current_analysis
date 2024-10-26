@@ -32,6 +32,9 @@ class Linear_regression{
 
         VectorXd trainModel(const vector<double>& weights, const vector<double>& areas);
 
+        void saveWeights(const VectorXd& w, const string& filename);
+
+        VectorXd loadWeights(const string& filename);
     private:
 };
 

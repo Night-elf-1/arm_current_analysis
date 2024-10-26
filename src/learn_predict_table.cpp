@@ -107,11 +107,48 @@ VectorXd Linear_regression::trainModel(const vector<double>& weights, const vect
     return w;
 }
 
+void Linear_regression::saveWeights(const VectorXd& w, const string& filename) {
+    ofstream file(filename);
+    if (!file.is_open()) {
+        cerr << "无法打开文件: " << filename << endl;
+        return;
+    }
+
+    for (int i = 0; i < w.size(); ++i) {
+        file << w[i] << endl;
+    }
+
+    file.close();
+}
+
+VectorXd Linear_regression::loadWeights(const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "无法打开文件: " << filename << endl;
+        return VectorXd();
+    }
+
+    vector<double> weights;
+    string line;
+    while (getline(file, line)) {
+        weights.push_back(stod(line));
+    }
+
+    file.close();
+
+    VectorXd w(weights.size());
+    for (size_t i = 0; i < weights.size(); ++i) {
+        w[i] = weights[i];
+    }
+
+    return w;
+}
+
 int main(int argc, char const *argv[])
 {
     Linear_regression Lr;
 
-    string filename = "/home/hamster/mycode/Arm_current_analysis/data/predictive_table.csv"; // CSV文件路径
+    string filename = "/home/hamster/mycode/Arm_current_analysis/data/predictive_table.csv";            // CSV文件路径
     vector<ClampingArmData> clampingArmData;
     // readCSV(filename, clampingArmData);
     Lr.readCSV(filename, clampingArmData);
@@ -130,20 +167,29 @@ int main(int argc, char const *argv[])
     // 训练线性回归模型
     VectorXd w = Lr.trainModel(weights, areas);
 
-    cout << "Linear regression model parameters: \n";
+    // 保存权重到文件
+    string weightsFile = "../data/weights.txt";
+    Lr.saveWeights(w, weightsFile);
+
+    cout << "线性回归模型参数: \n";
     cout << "Slope (m): " << w(0) << ", Intercept (b): " << w(1) << endl;
     cout << "w = " << w << endl;
 
+    // 从文件加载权重
+    VectorXd loadedWeights = Lr.loadWeights(weightsFile);
+    cout << "loadedWeights = " << loadedWeights << endl;
+
     // 实时读取平均电流值
     double realTimeArea;
-    cout << "Enter real-time average current area: ";
+    cout << "输入实际电流值: ";
     cin >> realTimeArea;
 
     // 使用模型进行预测
     double estimatedWeight = w(0) * realTimeArea + w(1);
+    //double estimatedWeight = loadedWeights(0) * realTimeArea + w(1);
 
     // 显示预测结果
-    cout << "Estimated vehicle weight: " << estimatedWeight << endl;
+    cout << "预测重量: " << estimatedWeight << endl;
 
     return 0;
 }
