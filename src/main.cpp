@@ -19,18 +19,52 @@
 #include <functional>
 #include <iostream>
 #include <chrono>
-//#include "MotorDAQ.h"
+#include <Eigen/Dense>
+#include "eigen3/Eigen/Core"
 #include "../include/MotorDAQ/MotorDAQ.h"
 
 using namespace std;
+using namespace Eigen;
 
 // 全局变量，标志是否收到SIGTERM信号
 volatile sig_atomic_t g_receivedSigTerm = 0;
+constexpr int TIMER_INTERVAL_MS = 100;
 
 // SIGTERM信号处理函数
 void sigtermHandler(int signal) {
     std::cout << "Received SIGTERM signal." << std::endl;
     g_receivedSigTerm = 1;
+}
+
+VectorXd loadWeights(const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "无法打开文件: " << filename << endl;
+        return VectorXd();
+    }
+
+    vector<double> weights;
+    string line;
+    while (getline(file, line)) {
+        weights.push_back(stod(line));
+    }
+
+    file.close();
+
+    VectorXd w(weights.size());
+    for (size_t i = 0; i < weights.size(); ++i) {
+        w[i] = weights[i];
+    }
+
+    return w;
+}
+
+double trapezoidalIntegration(const vector<double>& y, double dx) {
+    double area = 0.0;
+    for (size_t i = 1; i < y.size(); ++i) {
+        area += (y[i] + y[i - 1]) * dx / 2.0;
+    }
+    return area;
 }
 
 int main(int argc, char *argv[])
@@ -60,17 +94,26 @@ int main(int argc, char *argv[])
     // ros::Rate rate(10); 
     //！ 设置SIGTERM信号处理函数
     std::signal(SIGTERM, sigtermHandler);
+    auto next_trigger_time = std::chrono::steady_clock::now();
     //! 激光测距仪扫描线程
     while (!g_receivedSigTerm)
     {
+        // 更新下一次触发的时间点
+        next_trigger_time += std::chrono::milliseconds(TIMER_INTERVAL_MS);
         m_MotorDAQ->run();
-        //! 处理服务请求
-        // ros::spinOnce();
-        //! 以固定频率休眠
-        // rate.sleep();
+
+        // 等待直到下一次触发时间
+        std::this_thread::sleep_until(next_trigger_time);
     }
+    
+    double currentAreas;
+    for (size_t i = 0; i < arms.size(); i++)
+    {
+        currentAreas += trapezoidalIntegration(arms[i], 1);
+    }
+    currentAreas = currentAreas / 8;
+    
     delete m_MotorDAQ;
-    // sleep(1);
-    // ros::shutdown();
+
     return 0;
 }

@@ -139,50 +139,36 @@ void MotorDAQ::run(void)
     DWORD Value;
     DataFrame data;
     // 获取当前时间
-    auto now = std::chrono::system_clock::now();
-    auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-    auto epoch = now_ms.time_since_epoch();
-    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(epoch);
-    epoch -= seconds;
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+    // auto now = std::chrono::system_clock::now();
+    // auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+    // auto epoch = now_ms.time_since_epoch();
+    // auto seconds = std::chrono::duration_cast<std::chrono::seconds>(epoch);
+    // epoch -= seconds;
+    // auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
     
     // 格式化时间戳
-    time_t now_c = std::chrono::system_clock::to_time_t(now);
-    char timestamp[100];
-    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(&now_c));
-    std::sprintf(timestamp, "%s:%03d", timestamp, milliseconds.count());
-    data.timestamp = timestamp;
-    data.action = m_action;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, steeringWheel1, 1, &Value);
-    // std::cout << ret << "," << data.currentAxis[0] << " | ";
-    data.currentAxis[steeringWheel1] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, drivingWheel1, 1, &Value);
-    data.currentAxis[drivingWheel1] = static_cast<int16_t>(Value)/Dirve_FD144S_A_Unit;
-    // std::cout << ret << "," << data.currentAxis[1] << std::endl;
+    // time_t now_c = std::chrono::system_clock::to_time_t(now);
+    // char timestamp[100];
+    // strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(&now_c));
+    // std::sprintf(timestamp, "%s:%03d", timestamp, milliseconds.count());
+    // data.timestamp = timestamp;
+    // data.action = m_action;
+    
     ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, rightarm2, 1, &Value);
     // std::cout << ret << "," << data.currentAxis[2] << " | ";
     data.currentAxis[rightarm2] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
+
     ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, rightarm1, 1, &Value);
     // std::cout << ret << "," << data.currentAxis[3] << " | ";
     data.currentAxis[rightarm1] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
+
     ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, leftarm2, 1, &Value);
     // std::cout << ret << "," << data.currentAxis[4] << " | ";
     data.currentAxis[leftarm2] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
     ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, leftarm1, 1, &Value);
     // std::cout << ret << "," << data.currentAxis[5] << " | ";
     data.currentAxis[leftarm1] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, steeringWheel2, 1, &Value);
-    // std::cout << ret << "," << data.currentAxis[6] << " | ";
-    data.currentAxis[steeringWheel2] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, drivingWheel2, 1, &Value);
-    // std::cout << ret << "," << data.currentAxis[7] << " | ";
-    data.currentAxis[drivingWheel2] = static_cast<int16_t>(Value)/Dirve_FD144S_A_Unit;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, steeringWheel3, 1, &Value);
-    // std::cout << ret << "," << data.currentAxis[8] << " | ";
-    data.currentAxis[steeringWheel3] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, drivingWheel3, 1, &Value);
-    // std::cout << ret << "," << data.currentAxis[9] << " | ";
-    data.currentAxis[drivingWheel3] = static_cast<int16_t>(Value)/Dirve_FD144S_A_Unit;
+    
     ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, rightarm4, 1, &Value);
     // std::cout << ret << "," << data.currentAxis[10] << " | ";
     data.currentAxis[rightarm4] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
@@ -195,32 +181,8 @@ void MotorDAQ::run(void)
     ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, leftarm3, 1, &Value);
     // std::cout << ret << "," << data.currentAxis[13] << " | ";
     data.currentAxis[leftarm3] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, steeringWheel4, 1, &Value);
-    // std::cout << ret << "," << data.currentAxis[14] << " | ";
-    data.currentAxis[steeringWheel4] = static_cast<int16_t>(Value)/Dirve_FD134S_A_Unit;
-    ret = nmcs_read_txpdo_extra(ConnectNo, PortNum, drivingWheel4, 1, &Value);
-    // std::cout << ret << "," << data.currentAxis[15] << " | " << std::endl;
-    data.currentAxis[drivingWheel4] = static_cast<int16_t>(Value)/Dirve_FD144S_A_Unit;
     
-    if (m_readFlag) { 
-        if (m_QueueFirst.size() < 1024) {
-            m_QueueFirst.push(data);
-        } else {
-            m_readFlag = false;
-            m_QueueFirstHasData = true;
-            std::cout << "m_QueueFirst够1024" << std::endl;
-            m_QueueSecond.push(data);
-        }
-    } else {
-        if (m_QueueSecond.size() < 1024) {
-            m_QueueSecond.push(data);
-        } else {
-            m_readFlag = true;
-            m_QueueSecondHasData = true;
-            std::cout << "m_QueueSecond够1024" << std::endl;
-            m_QueueFirst.push(data);
-        }
-    }
+
 }
 
 void MotorDAQ::runSave(void)

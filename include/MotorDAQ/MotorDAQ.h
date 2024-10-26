@@ -28,6 +28,9 @@
 
 #define TARGET_FILE_SIZE        (10 * 1024 * 1024)
 void exit_func(void);
+// std::vector<DataFrame> arm1, arm2, arm3, arm4, arm5, arm6, arm7, arm8;
+std::vector<vector<double>> arms;
+
 
 enum MotionAxis
 {
@@ -75,6 +78,7 @@ struct DataFrame {
     std::string timestamp;
     std::string action;
     double currentAxis[16];
+    double currentdatas;
 };
 
 
@@ -92,6 +96,7 @@ public:
     void saveDAQToFile(const std::string& fileName);
     void run(void);
     void runSave(void);
+    
 private:
     // void behaviorActionCallback(const std_msgs::String& msg);
     void connectInit(void);
