@@ -74,7 +74,7 @@ void Linear_regression::calculateTrapzAreas(const vector<ClampingArmData>& data,
             const vector<double>& currentData = data[index].currentData;
 
             // 数据点之间的间距为1
-            double dx = 1.0;
+            double dx = 0.1;
             // 梯形积分法计算面积
             double area = trapezoidalIntegration(currentData, dx);
             sumArea += area;
