@@ -21,12 +21,14 @@ set(LINEAR_REGRESSION src/learn_predict_table.cpp)
 set(TIMER_CALLBACK src/timer_callback/test.cpp)
 set(DRAWPICTURE src/DrawPicture/main.cpp)
 set(EXTRACTDATA src/DrawPicture/extractData.cpp)
+set(LINEAR_REGRESSION_NEW src/learn_predict_table_new.cpp)
 
 # 添加测试程序的可执行文件
 add_executable(Linear_regression ${LINEAR_REGRESSION})
 add_executable(TIMER ${TIMER_CALLBACK})
 add_executable(DRAWPICTURE_ ${DRAWPICTURE})
 add_executable(extractdatas ${EXTRACTDATA})
+add_executable(linear_regression_new ${LINEAR_REGRESSION_NEW})
 
 # 如果您的项目依赖于Eigen库，并且Eigen库位于include目录下
 find_package(Eigen3 REQUIRED)
@@ -41,6 +43,13 @@ if(EIGEN3_FOUND)
                         dl
     )
     target_link_libraries(extractdatas 
+                        ${PYTHON_LIBRARIES}
+                        python3.10.so
+                        pthread
+                        dl
+    )
+    target_link_libraries(linear_regression_new 
+                        ${EIGEN3_LIBRARIES}                    
                         ${PYTHON_LIBRARIES}
                         python3.10.so
                         pthread
