@@ -233,7 +233,6 @@ void drawHistogram(const std::map<int, int>& counts) {
     plt::show();
 }
 
-
 // 滤波函数
 std::vector<std::vector<std::vector<double>>> lvbo(std::vector<std::vector<std::vector<double>>>& datas) {
     const int MEDIAN_WINDOW_SIZE = 5;     // 中值滤波窗口大小
@@ -328,6 +327,95 @@ std::vector<std::vector<std::vector<double>>> lvbo(std::vector<std::vector<std::
     return filteredData;
 }
 
+// 滤波2 在agv中跑
+std::vector<std::vector<double>> lvbo2(std::vector<std::vector<double>>& datas) {
+    const int MEDIAN_WINDOW_SIZE = 5;     // 中值滤波窗口大小
+    const int MEAN_WINDOW_SIZE = 3;       // 均值滤波窗口大小
+    const double OUTLIER_THRESHOLD = 3.0;  // 异常值判断阈值（标准差的倍数）
+    
+    std::vector<std::vector<double>> filteredData;
+    filteredData.resize(datas.size());
+    
+    // 处理每个夹臂的数据
+    for (size_t i = 0; i < datas.size(); ++i) {
+        const auto& currentArm = datas[i];
+        std::vector<double>& filteredArm = filteredData[i];
+        filteredArm.reserve(currentArm.size());
+        
+        // 如果数据点太少，直接返回原始数据
+        if (currentArm.size() < MEDIAN_WINDOW_SIZE) {
+            filteredArm = currentArm;
+            continue;
+        }
+        
+        // 第一步：中值滤波处理极值
+        std::deque<double> medianWindow;
+        std::vector<double> medianFiltered;
+        medianFiltered.reserve(currentArm.size());
+        
+        // 初始填充窗口
+        for (int j = 0; j < MEDIAN_WINDOW_SIZE && j < currentArm.size(); ++j) {
+            medianWindow.push_back(currentArm[j]);
+        }
+        
+        // 对每个数据点进行中值滤波
+        for (size_t j = 0; j < currentArm.size(); ++j) {
+            // 创建临时窗口进行排序
+            std::vector<double> tempWindow(medianWindow.begin(), medianWindow.end());
+            std::sort(tempWindow.begin(), tempWindow.end());
+            
+            // 获取中值
+            double median = tempWindow[tempWindow.size() / 2];
+            medianFiltered.push_back(median);
+            
+            // 滑动窗口
+            if (j + MEDIAN_WINDOW_SIZE < currentArm.size()) {
+                medianWindow.pop_front();
+                medianWindow.push_back(currentArm[j + MEDIAN_WINDOW_SIZE]);
+            }
+        }
+        
+        // 第二步：均值滤波处理一般波动
+        std::deque<double> meanWindow;
+        
+        // 初始填充均值滤波窗口
+        for (int j = 0; j < MEAN_WINDOW_SIZE && j < medianFiltered.size(); ++j) {
+            meanWindow.push_back(medianFiltered[j]);
+        }
+        
+        // 对每个数据点进行均值滤波
+        for (size_t j = 0; j < medianFiltered.size(); ++j) {
+            // 计算当前窗口的均值
+            double sum = std::accumulate(meanWindow.begin(), meanWindow.end(), 0.0);
+            double mean = sum / meanWindow.size();
+            
+            // 计算标准差
+            double sqSum = std::accumulate(meanWindow.begin(), meanWindow.end(), 0.0,
+                [mean](double acc, double val) {
+                    double diff = val - mean;
+                    return acc + diff * diff;
+                });
+            double stdDev = std::sqrt(sqSum / meanWindow.size());
+            
+            // 如果当前值偏离均值太多，则使用均值替代
+            double currentValue = medianFiltered[j];
+            if (std::abs(currentValue - mean) > OUTLIER_THRESHOLD * stdDev) {
+                filteredArm.push_back(mean);
+            } else {
+                filteredArm.push_back(currentValue);
+            }
+            
+            // 滑动窗口
+            if (j + MEAN_WINDOW_SIZE < medianFiltered.size()) {
+                meanWindow.pop_front();
+                meanWindow.push_back(medianFiltered[j + MEAN_WINDOW_SIZE]);
+            }
+        }
+    }
+    
+    return filteredData;
+}
+
 // 提前后10%的数据
 std::vector<std::vector<std::vector<double>>> extractLastTenPercent(
     const std::vector<std::vector<std::vector<double>>>& CurrentDatas_1) {
@@ -415,7 +503,8 @@ int main(int argc, char const *argv[])
     tempCurrentDatas_1 = extractLastTenPercent(CurrentDatas_1);
     tempCurrentDatas_2 = extractLastTenPercent(CurrentDatas_2);
     // 滤波处理
-    filterTempCurrentDatas_1 = lvbo(tempCurrentDatas_1);
+    // filterTempCurrentDatas_1 = lvbo(tempCurrentDatas_1);
+    auto filterData = lvbo2(tempCurrentDatas_1[15]);
     std::vector<double> tempcurrentmean_1;
     std::vector<double> tempcurrentmean_2;
     tempcurrentmean_1 = calculateCurrentMean(tempCurrentDatas_1);
@@ -445,13 +534,6 @@ int main(int argc, char const *argv[])
     // 提取电流均值
     currentMean_1 = extractData_currentMean(filename_1);
     currentMean_2 = extractData_currentMean(filename_2);
-    // for (int i = 0; i < currentMean_1.size(); i++)
-    // {
-    //     /* code */
-    //     std::cout << currentMean_1[i] << std::endl;
-    // }
-    
-
 
     // 获取x轴的信息 画图用
     std::vector<double> x_1(tempcurrentmean_1.size());                                      // X轴数据
@@ -466,8 +548,8 @@ int main(int argc, char const *argv[])
     // 画图
     // drawPicture(x_1, tempcurrentmean_1, tempcurrentmean_2, x_2);
     // drawHistogram(count_2);                                                         // 频率直方图
-    drawCurrentPicture(filterTempCurrentDatas_1[7]);                                             // 绘制电流8个夹臂数据
-    drawCurrentPicture(tempCurrentDatas_1[7]);
+    drawCurrentPicture(filterData);                                             // 绘制电流8个夹臂数据
+    drawCurrentPicture(tempCurrentDatas_1[15]);
 
     return 0;
 }
