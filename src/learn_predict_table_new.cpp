@@ -194,12 +194,14 @@ void saveWeights(const VectorXd& w, const string& filename) {
 }
 
 // 画图
-void drawPicture(std::vector<double>& x_1, std::vector<double>& data_1, std::vector<double> data_2, std::vector<double>& x_2){
-    plt::figure_size(800,600);
+void drawPicture(std::vector<double>& x_1, std::vector<double>& data_1, std::vector<double> data_2, std::vector<double>& x_2, 
+                    std::vector<double> data_3, std::vector<double>& x_3){
+    plt::figure_size(1200,1000);
     // plt::ylim(10, 14);
     plt::named_plot("Line 1 (1.05T)", x_1, data_1, "b-");  // 使用 named_plot 给线条命名
     plt::named_plot("Line 2 (1.2T)", x_2, data_2, "r-");
-    plt::title("Current Mean Compare(1.2T and 1.05T)");
+    plt::named_plot("Line 3 (2.2T)", x_3, data_3, "g-");
+    plt::title("Current Mean Compare(1.2T and 1.05T and 2.2T)");
     plt::xlabel("Time");
     plt::ylabel("Current Mean");
     plt::grid(true);
@@ -530,10 +532,12 @@ int main(int argc, char const *argv[])
     double totalMeanArea;
     std::vector<double> currentMean_1;                                                  // 电流均值容器
     std::vector<double> currentMean_2;
+    std::vector<double> currentMean_3;
 
     // 文件名
     std::string filename_1 = "/home/hamster/mycode/Arm_current_analysis/data/armsdata_J75_11-07(1.05t).txt";    // 1.05吨的电流数据
     std::string filename_2 = "/home/hamster/mycode/Arm_current_analysis/data/armsdata_J75_11-07(1.2t).txt";     // 1.2吨的电流数据
+    std::string filename_3 = "/home/hamster/mycode/Arm_current_analysis/data/armsdata_J75_11-07(2.2t).txt";     // 1.2吨的电流数据
     // CurrentDatas_1 = extractCurrentData(filename_1);                                // 提取电流数据
     // CurrentDatas_2 = extractCurrentData(filename_2);                                // 提取电流数据
 
@@ -553,52 +557,57 @@ int main(int argc, char const *argv[])
     // 提取电流均值
     currentMean_1 = extractData_currentMean(filename_1);
     currentMean_2 = extractData_currentMean(filename_2);
+    currentMean_3 = extractData_currentMean(filename_3);
 
     // ==========================================================================================================
     // 准备训练数据
-    vector<double> training_currents;
-    vector<double> training_weights;
-    prepareTrainingData(currentMean_1, currentMean_2, training_currents, training_weights);             // 输入数据
+    // vector<double> training_currents;
+    // vector<double> training_weights;
+    // prepareTrainingData(currentMean_1, currentMean_2, training_currents, training_weights);             // 输入数据
 
-    // 训练模型
-    VectorXd w = trainModel(training_weights, training_currents);
+    // // 训练模型
+    // VectorXd w = trainModel(training_weights, training_currents);
 
-    // 保存权重文件
-    saveWeights(w, "/home/hamster/mycode/Arm_current_analysis/data/model_weights.txt");
+    // // 保存权重文件
+    // saveWeights(w, "/home/hamster/mycode/Arm_current_analysis/data/model_weights.txt");
 
-    cout << "模型训练完成！" << endl;
-    cout << "斜率 (w0): " << w(0) << endl;
-    cout << "截距 (w1): " << w(1) << endl;
+    // cout << "模型训练完成！" << endl;
+    // cout << "斜率 (w0): " << w(0) << endl;
+    // cout << "截距 (w1): " << w(1) << endl;
 
-    double realTimeCurrent;                                     // 实时电流均值
+    // double realTimeCurrent;                                     // 实时电流均值
 
-    char continue_predict = 'y';
-    while (continue_predict == 'y' || continue_predict == 'Y')
-    {
-        cout << "输入实时电流均值: ";
-        cin >> realTimeCurrent;
+    // char continue_predict = 'y';
+    // while (continue_predict == 'y' || continue_predict == 'Y')
+    // {
+    //     cout << "输入实时电流均值: ";
+    //     cin >> realTimeCurrent;
 
-        // 预测重量
-        double estimatedWeight = w(0) * realTimeCurrent + w(1);
-        cout << "预测重量: " << estimatedWeight << " 吨" << endl;
+    //     // 预测重量
+    //     double estimatedWeight = w(0) * realTimeCurrent + w(1);
+    //     cout << "预测重量: " << estimatedWeight << " 吨" << endl;
 
-        cout << "是否继续预测？(y/n): ";
-        cin >> continue_predict;
-    }
+    //     cout << "是否继续预测？(y/n): ";
+    //     cin >> continue_predict;
+    // }
     // ==========================================================================================================
 
     // 获取x轴的信息 画图用
-    // std::vector<double> x_1(trapzArea_1.size());                                      // X轴数据
-    // for (size_t i = 0; i < trapzArea_1.size(); ++i) {
-    //     x_1[i] = i + 1;
-    // }
-    // std::vector<double> x_2(trapzArea_2.size());                                      // X轴数据
-    // for (size_t i = 0; i < trapzArea_2.size(); ++i) {
-    //     x_2[i] = i + 1;
-    // }
+    std::vector<double> x_1(currentMean_1.size());                                      // X轴数据
+    for (size_t i = 0; i < currentMean_1.size(); ++i) {
+        x_1[i] = i + 1;
+    }
+    std::vector<double> x_2(currentMean_2.size());                                      // X轴数据
+    for (size_t i = 0; i < currentMean_2.size(); ++i) {
+        x_2[i] = i + 1;
+    }
+    std::vector<double> x_3(currentMean_3.size());                                      // X轴数据
+    for (size_t i = 0; i < currentMean_3.size(); ++i) {
+        x_3[i] = i + 1;
+    }
 
     // 画图
-    // drawPicture(x_1, trapzArea_1, trapzArea_2, x_2);
+    drawPicture(x_1, currentMean_1, currentMean_2, x_2, currentMean_3, x_3);                                    // 画折线图
     // drawHistogram(count_2);                                                         // 频率直方图
     // drawCurrentPicture(filterData);                                             // 绘制电流8个夹臂数据
     // drawCurrentPicture(CurrentDatas_1[10]);
