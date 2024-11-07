@@ -164,7 +164,8 @@ VectorXd trainModel(const vector<double>& weights, const vector<double>& areas) 
 // 画图
 void drawPicture(std::vector<double>& x_1, std::vector<double>& data_1, std::vector<double> data_2, std::vector<double>& x_2){
     plt::figure_size(800,600);
-    plt::named_plot("Line 1 (1.05T)", x_1, data_1, "b-");  // 使用 named_plot 给线条命名
+    plt::ylim(11, 15);
+    // plt::named_plot("Line 1 (1.05T)", x_1, data_1, "b-");  // 使用 named_plot 给线条命名
     plt::named_plot("Line 2 (1.35T)", x_2, data_2, "r-");
     plt::title("Current Mean Compare(1.35T and 1.05T)");
     plt::xlabel("Time");
@@ -185,15 +186,16 @@ void drawCurrentPicture(std::vector<std::vector<double>>& datas){
     }
     
     plt::figure_size(1200,1000);
-    plt::named_plot("arm1 (1.05T)", x[0], datas[0], "b-");                   // 使用 named_plot 给线条命名
-    plt::named_plot("arm2 (1.05T)", x[1], datas[1], "r-");
-    plt::named_plot("arm3 (1.05T)", x[2], datas[2], "g-");
-    plt::named_plot("arm4 (1.05T)", x[3], datas[3], "c-");
-    plt::named_plot("arm5 (1.05T)", x[4], datas[4], "m-");
-    plt::named_plot("arm6 (1.05T)", x[5], datas[5], "y-");
-    plt::named_plot("arm7 (1.05T)", x[6], datas[6], "k-");
-    plt::named_plot("arm8 (1.05T)", x[7], datas[7], "w-");
-    plt::title("Current Data(1.05T)");
+    plt::ylim(5, 18);
+    plt::named_plot("arm1 (1.2T)", x[0], datas[0], "b-");                   // 使用 named_plot 给线条命名
+    plt::named_plot("arm2 (1.2T)", x[1], datas[1], "r-");
+    plt::named_plot("arm3 (1.2T)", x[2], datas[2], "g-");
+    plt::named_plot("arm4 (1.2T)", x[3], datas[3], "c-");
+    plt::named_plot("arm5 (1.2T)", x[4], datas[4], "m-");
+    plt::named_plot("arm6 (1.2T)", x[5], datas[5], "y-");
+    plt::named_plot("arm7 (1.2T)", x[6], datas[6], "k-");
+    plt::named_plot("arm8 (1.2T)", x[7], datas[7], "w-");
+    plt::title("Current Data(1.2T)");
     plt::xlabel("Time");
     plt::ylabel("Current data");
     plt::grid(true);
@@ -482,33 +484,33 @@ std::vector<double> calculateCurrentMean(std::vector<std::vector<std::vector<dou
 int main(int argc, char const *argv[])
 {
     /* code */
-    std::vector<std::vector<std::vector<double>>> CurrentDatas_1;
+    std::vector<std::vector<std::vector<double>>> CurrentDatas_1;                       // 存放电流数据三维容器
     std::vector<std::vector<std::vector<double>>> CurrentDatas_2;
-    std::vector<std::vector<std::vector<double>>> tempCurrentDatas_1;
+    std::vector<std::vector<std::vector<double>>> tempCurrentDatas_1;                   // 暂存电流数据
     std::vector<std::vector<std::vector<double>>> tempCurrentDatas_2;
-    std::vector<std::vector<std::vector<double>>> filterTempCurrentDatas_1;
+    std::vector<std::vector<std::vector<double>>> filterTempCurrentDatas_1;             // 滤波后电流数据
     std::vector<std::vector<std::vector<double>>> filterTempCurrentDatas_2;
-    std::vector<double> trapzArea_1;
+    std::vector<double> trapzArea_1;                                                    // 梯形面积容器
     std::vector<double> trapzArea_2;
     double totalMeanArea;
-    std::vector<double> currentMean_1;
+    std::vector<double> currentMean_1;                                                  // 电流均值容器
     std::vector<double> currentMean_2;
 
     // 文件名
     std::string filename_1 = "/home/hamster/mycode/Arm_current_analysis/data/armsdata_J75_11-05(1.3t).txt";
-    std::string filename_2 = "/home/hamster/mycode/Arm_current_analysis/data/armsdata_J75_11-05(1.6t).txt";
-    CurrentDatas_1 = extractCurrentData(filename_1);                                  // 提取电流数据
+    std::string filename_2 = "/home/hamster/mycode/Arm_current_analysis/data/armsdata_J75_11-07(1.2t).txt";
+    // CurrentDatas_1 = extractCurrentData(filename_1);                                  // 提取电流数据
     CurrentDatas_2 = extractCurrentData(filename_2);
     // 提取后10%的数据
-    tempCurrentDatas_1 = extractLastTenPercent(CurrentDatas_1);
-    tempCurrentDatas_2 = extractLastTenPercent(CurrentDatas_2);
+    // tempCurrentDatas_1 = extractLastTenPercent(CurrentDatas_1);
+    // tempCurrentDatas_2 = extractLastTenPercent(CurrentDatas_2);
     // 滤波处理
     // filterTempCurrentDatas_1 = lvbo(tempCurrentDatas_1);
-    auto filterData = lvbo2(tempCurrentDatas_1[15]);
-    std::vector<double> tempcurrentmean_1;
-    std::vector<double> tempcurrentmean_2;
-    tempcurrentmean_1 = calculateCurrentMean(tempCurrentDatas_1);
-    tempcurrentmean_2 = calculateCurrentMean(tempCurrentDatas_2);
+    auto filterData = lvbo2(CurrentDatas_2[10]);
+    // std::vector<double> tempcurrentmean_1;
+    // std::vector<double> tempcurrentmean_2;
+    // tempcurrentmean_1 = calculateCurrentMean(tempCurrentDatas_1);
+    // tempcurrentmean_2 = calculateCurrentMean(CurrentDatas_2);                           // 计算电流均值
     // for (int i = 0; i < tempcurrentmean_1.size(); i++)
     // {
     //     std::cout << tempcurrentmean_1[i] << std::endl;
@@ -520,36 +522,42 @@ int main(int argc, char const *argv[])
     // }
     
     // 提取面积
-    trapzArea_1 = extractData_trapzArea(filename_1);                                // 提取1.35t
-    trapzArea_2 = extractData_trapzArea(filename_2);                                // 提取1.05t
-    auto count_1 = countOccurrences(trapzArea_1);                                   // 统计频率
-    auto count_2 = countOccurrences(trapzArea_2);                                   // 统计频率
-    for (int i = 0; i < trapzArea_1.size(); i++)
-    {
-        totalMeanArea += trapzArea_1[i];
-    }
-    totalMeanArea /= trapzArea_1.size();
+    // trapzArea_1 = extractData_trapzArea(filename_1);                                // 提取1.35t
+    // trapzArea_2 = extractData_trapzArea(filename_2);                                // 提取1.05t
+    // auto count_1 = countOccurrences(trapzArea_1);                                   // 统计频率
+    // auto count_2 = countOccurrences(trapzArea_2);                                   // 统计频率
+    // for (int i = 0; i < trapzArea_1.size(); i++)
+    // {
+    //     totalMeanArea += trapzArea_1[i];
+    // }
+    // totalMeanArea /= trapzArea_1.size();
     // std::cout << "总平均面积 = " << totalMeanArea << std::endl;
 
     // 提取电流均值
     currentMean_1 = extractData_currentMean(filename_1);
     currentMean_2 = extractData_currentMean(filename_2);
+    // std::cout << "currentMean_2 = " << std::endl;
+    // for (int i = 0; i < currentMean_2.size(); i++)
+    // {
+    //     std::cout << currentMean_2[i] << std::endl;
+    // }
+    
 
     // 获取x轴的信息 画图用
-    std::vector<double> x_1(tempcurrentmean_1.size());                                      // X轴数据
-    for (size_t i = 0; i < tempcurrentmean_1.size(); ++i) {
+    std::vector<double> x_1(currentMean_1.size());                                      // X轴数据
+    for (size_t i = 0; i < currentMean_1.size(); ++i) {
         x_1[i] = i + 1;
     }
-    std::vector<double> x_2(tempcurrentmean_2.size());                                      // X轴数据
-    for (size_t i = 0; i < tempcurrentmean_2.size(); ++i) {
+    std::vector<double> x_2(currentMean_2.size());                                      // X轴数据
+    for (size_t i = 0; i < currentMean_2.size(); ++i) {
         x_2[i] = i + 1;
     }
 
     // 画图
-    // drawPicture(x_1, tempcurrentmean_1, tempcurrentmean_2, x_2);
+    // drawPicture(x_1, currentMean_1, currentMean_2, x_2);
     // drawHistogram(count_2);                                                         // 频率直方图
     drawCurrentPicture(filterData);                                             // 绘制电流8个夹臂数据
-    drawCurrentPicture(tempCurrentDatas_1[15]);
+    drawCurrentPicture(CurrentDatas_2[10]);
 
     return 0;
 }
